@@ -1,7 +1,7 @@
 const db = require("../connection");
 const format = require("pg-format");
 
-const seed = (data) => {
+const seed = function (data) {
   const { categoryData, commentData, reviewData, userData } = data;
   // 1. create tables
   return (
@@ -41,11 +41,11 @@ const seed = (data) => {
         title VARCHAR(255),
         review_body VARCHAR(2000),
         designer VARCHAR(255),
-        review_img_url VARCHAR(255),
-        votes INT,
+        review_img_url VARCHAR(255) DEFAULT ('https://images.pexels.com/photos/163064/play-stone-network-networked-interactive-163064.jpeg'),
+        votes INT DEFAULT (0),
         category VARCHAR(255) REFERENCES categories (slug),
         owner VARCHAR(255) REFERENCES users (username),
-        created_at DATE
+        created_at DATE DEFAULT (now() at time zone 'utc')
       );`);
       })
       //comment
@@ -53,10 +53,10 @@ const seed = (data) => {
         return db.query(`
       CREATE TABLE comments (
         comment_id SERIAL PRIMARY KEY,
-        author VARCHAR(255),
+        author VARCHAR(255) REFERENCES users (username),
         review_id INT REFERENCES reviews (review_id),
-        votes INT,
-        created_at DATE, 
+        votes INT DEFAULT (0),
+        created_at DATE DEFAULT (now() at time zone 'utc'), 
         body VARCHAR(2000)
       );`);
       })
@@ -127,4 +127,4 @@ const seed = (data) => {
   );
 };
 
-module.exports = seed;
+module.exports = { seed };
