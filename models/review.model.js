@@ -63,6 +63,7 @@ exports.selectReviews = (
   category === ""
     ? (catQuery = "")
     : (catQuery = `WHERE category = '${category}'`);
+
   if (
     ![
       "owner",
@@ -77,10 +78,20 @@ exports.selectReviews = (
   ) {
     return Promise.reject({ status: 400, msg: "INVALID sort_by QUERY" });
   }
+
   if (!["ASC", "DESC"].includes(order)) {
     return Promise.reject({ status: 400, msg: "INVALID order QUERY" });
   }
-  if (!["", "euro game", "dexterity", "social deduction"].includes(category)) {
+
+  if (
+    ![
+      "",
+      "children's games",
+      "euro game",
+      "dexterity",
+      "social deduction",
+    ].includes(category)
+  ) {
     return Promise.reject({ status: 400, msg: "INVALID category QUERY" });
   }
 
@@ -103,4 +114,37 @@ exports.selectReviews = (
     .catch((err) => {
       console.log(err);
     });
+};
+
+exports.checkReviewsExist = (category = "") => {
+  let tCat;
+  if (category.includes("'")) {
+    tCat = removeApostrophe(category);
+  } else {
+    tCat = category;
+  }
+  let catQuery;
+  category === "" ? (catQuery = "") : (catQuery = `WHERE category = '${tCat}'`);
+  if (
+    ![
+      "",
+      "children's games",
+      "euro game",
+      "dexterity",
+      "social deduction",
+    ].includes(category)
+  ) {
+    return Promise.reject({ status: 400, msg: "INVALID category QUERY" });
+  }
+  // console.log(catQuery);
+
+  return db.query(`SELECT * FROM reviews ${catQuery}`).then((result) => {
+    const { rows } = result;
+    // console.log(result);
+    if (rows.length === 0) {
+      return Promise.reject({ status: 404, msg: "category has no reviews" });
+    } else {
+      return Promise.resolve();
+    }
+  });
 };

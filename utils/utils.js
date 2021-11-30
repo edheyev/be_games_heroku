@@ -23,3 +23,7 @@ exports.checkValidBody = (check, example) => {
     }
   });
 };
+
+exports.removeApostrophe = (string) => {
+  return string.replace("'", "\\'");
+};

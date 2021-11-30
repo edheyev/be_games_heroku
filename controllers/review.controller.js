@@ -3,8 +3,9 @@ const {
   checkIfReviewExists,
   updateReviewVotesById,
   selectReviews,
+  checkReviewsExist,
 } = require("../models/review.model.js");
-const { checkValidBody } = require("../utils/utils");
+const { checkValidBody, removeApostrophe } = require("../utils/utils");
 
 exports.getReviewById = (req, res, next) => {
   const { review_id } = req.params;
@@ -15,7 +16,7 @@ exports.getReviewById = (req, res, next) => {
 exports.patchReviewVotesById = (req, res, next) => {
   const { review_id } = req.params;
   const { inc_votes } = req.body;
-  // console.log(req.body, "<<<<<<<<<<<");
+
   Promise.all([
     updateReviewVotesById(review_id, inc_votes),
     checkIfReviewExists(review_id),
@@ -29,8 +30,13 @@ exports.patchReviewVotesById = (req, res, next) => {
 
 exports.getReviews = (req, res, next) => {
   const { sort_by, order, category } = req.query;
-  selectReviews(sort_by, order, category).then((reviews) => {
-    // console.log({ reviews });
-    res.status(200).send({ reviews: reviews });
-  });
+  Promise.all([
+    selectReviews(sort_by, order, category),
+    checkReviewsExist(category),
+  ])
+    .then(([reviews]) => {
+      console.log({ reviews });
+      res.status(200).send({ reviews: reviews });
+    })
+    .catch(next);
 };

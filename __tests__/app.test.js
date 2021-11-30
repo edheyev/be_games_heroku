@@ -125,10 +125,10 @@ describe("PATCH /api/reviews/:review_id", () => {
 describe("GET /api/reviews", () => {
   it("status 200: responds with array of review object sorted by date", () => {
     return request(app)
-      .get("/api/reviews/")
+      .get("/api/reviews")
       .expect(200)
       .then(({ body }) => {
-        console.log(body.reviews);
+        // console.log(body.reviews);
         expect(body.reviews.length > 0).toBe(true);
         expect(body.reviews).toBeSortedBy("created_at");
         body.reviews.forEach((review) => {
@@ -169,7 +169,7 @@ describe("GET /api/reviews", () => {
         });
       });
   });
-  it("status 200: accepts category query which filters based on category", () => {
+  it.only("status 200: accepts category query which filters based on category", () => {
     return request(app)
       .get("/api/reviews?sort_by=votes&order=DESC&category=dexterity")
       .expect(200)
@@ -182,6 +182,42 @@ describe("GET /api/reviews", () => {
         body.reviews.forEach((review) => {
           expect(review.category).toEqual("dexterity");
         });
+      });
+  });
+  //bad sort by col
+  it("status 400: bad sort by query", () => {
+    return request(app)
+      .get("/api/reviews?sort_by=frogs")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("INVALID sort_by QUERY");
+      });
+  });
+  //bad order
+  it("status 400: bad order query", () => {
+    return request(app)
+      .get("/api/reviews?order=GWA")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("INVALID order QUERY");
+      });
+  });
+  //bad cat
+  it("status 400: category", () => {
+    return request(app)
+      .get("/api/reviews?category=paper")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("INVALID category QUERY");
+      });
+  });
+  //cat with no reviews associated
+  it.only("status 400: category has no reviews", () => {
+    return request(app)
+      .get("/api/reviews?category=children%27s+games")
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("category has no reviews");
       });
   });
 });

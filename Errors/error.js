@@ -13,5 +13,5 @@ exports.handleSqlErrors = (err, req, res, next) => {
   }
 };
 exports.handle500Errors = (err, req, res, next) => {
-  res.status(500).send({ msg: "Internam Server Error" });
+  res.status(500).send({ msg: "Internam Server Error!" });
 };
