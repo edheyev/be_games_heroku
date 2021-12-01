@@ -3,9 +3,12 @@ const {
   getReviews,
   getReviewById,
   patchReviewVotesById,
+} = require("../controllers/review.controller");
+
+const {
   getReviewCommentsById,
   postCommentOnReview,
-} = require("../controllers/review.controller");
+} = require("../controllers/comments.controller");
 
 const reviewRouter = express.Router();
 
