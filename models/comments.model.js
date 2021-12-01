@@ -30,3 +30,28 @@ exports.selectReviewCommentsById = (review_id) => {
     })
     .catch((err) => {});
 };
+
+exports.removeCommentById = (comment_id) => {
+  return db
+    .query(`DELETE FROM comments WHERE comment_id = $1`, [comment_id])
+    .then(() => {
+      return Promise.resolve;
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
+exports.checkCommentExists = (comment_id) => {
+  return db
+    .query(`SELECT * FROM comments WHERE comment_id = $1`, [comment_id])
+    .then(({ rows }) => {
+      if (rows.length === 0) {
+        return Promise.reject({ status: 400, msg: "Comment does not exist" });
+      }
+      return Promise.resolve;
+    })
+    .catch((err) => {
+      return Promise.reject(err);
+    });
+};

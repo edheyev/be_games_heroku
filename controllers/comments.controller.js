@@ -2,6 +2,8 @@ const { checkReviewExists } = require("../models/review.model.js");
 const {
   selectReviewCommentsById,
   insertCommentOnReview,
+  removeCommentById,
+  checkCommentExists,
 } = require("../models/comments.model");
 
 const { checkValidBody } = require("../utils/utils");
@@ -32,4 +34,16 @@ exports.postCommentOnReview = (req, res, next) => {
     .catch((err) => {
       next(err);
     });
+};
+
+exports.deleteCommentById = (req, res, next) => {
+  const { comment_id } = req.params;
+  checkCommentExists(comment_id)
+    .then(() => {
+      removeCommentById(comment_id);
+    })
+    .then(() => {
+      res.status(204).send();
+    })
+    .catch(next);
 };

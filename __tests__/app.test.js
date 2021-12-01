@@ -307,5 +307,128 @@ describe("POST /api/reviews/:review_id/comments", () => {
       });
   });
 });
-// DELETE /api/comments/:comment_id
-// GET /api
+
+describe("DELETE /api/comments/:comment_id", () => {
+  it("status 204 returns no content and deletes from database", () => {
+    return request(app)
+      .delete("/api/comments/6")
+      .expect(204)
+      .then((response) => {
+        expect(response.body).toEqual({});
+      });
+  });
+  it("status 400 comment doesnt exist", () => {
+    return request(app)
+      .delete("/api/comments/9999999")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toEqual("Comment does not exist");
+      });
+  });
+});
+
+//NOT COMPLETE
+describe("GET /api/", () => {
+  it("status 200 returns JSON including all available endpoints", () => {
+    return request(app)
+      .get("/api")
+      .expect(200)
+      .then((response) => {
+        expect(response.body.apiDocument).toEqual({
+          "GET /api": {
+            description:
+              "serves up a json representation of all the available endpoints of the api",
+          },
+          "GET /api/categories": {
+            description: "serves an array of all categories",
+            queries: [],
+            exampleResponse: {
+              categories: [
+                {
+                  description:
+                    "Players attempt to uncover each other's hidden role",
+                  slug: "Social deduction",
+                },
+              ],
+            },
+          },
+          "GET /api/reviews": {
+            description: "serves an array of all reviews",
+            queries: ["category", "sort_by", "order"],
+            exampleResponse: {
+              reviews: [
+                {
+                  title: "One Night Ultimate Werewolf",
+                  designer: "Akihisa Okui",
+                  owner: "happyamy2016",
+                  review_img_url:
+                    "https://images.pexels.com/photos/5350049/pexels-photo-5350049.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260",
+                  category: "hidden-roles",
+                  created_at: 1610964101251,
+                  votes: 5,
+                },
+              ],
+            },
+          },
+          "GET /api/reviews/:review_id": {
+            description: "returns review matching provided ID",
+            queries: [],
+            exampleResponse: {},
+          },
+          "PATCH /api/reviews/:review_id": {
+            description: "increments votes matching ID",
+            queries: [
+              "owner",
+              "title",
+              "review_id",
+              "review_img_url",
+              "category",
+              "created_at",
+              "votes",
+              "comment_count",
+            ],
+            exampleResponse: {
+              title: "One Night Ultimate Werewolf",
+              designer: "Akihisa Okui",
+              owner: "happyamy2016",
+              review_img_url:
+                "https://images.pexels.com/photos/5350049/pexels-photo-5350049.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260",
+              category: "hidden-roles",
+              created_at: 1610964101251,
+              votes: 5,
+            },
+          },
+          "GET /api/reviews/:review_id/comments": {
+            description:
+              "responds with array of review objects sorted by date by default",
+            queries: [],
+            exampleResponse: [
+              {
+                comment_id: 1,
+                created_at: "DATE",
+                votes: 10,
+                author: "Ed",
+                body: "game good",
+              },
+            ],
+          },
+          "POST /api/reviews/:review_id/comments": {
+            description: "post comment to valid review specified by review_id",
+            queries: [],
+            exampleResponse: {
+              comment_id: 1,
+              created_at: "DATE",
+              votes: 10,
+              author: "Ed",
+              body: "game good",
+            },
+          },
+          "DELETE /api/comments/:comment_id": {
+            description: "delete comment via comment id",
+            queries: [],
+            exampleResponse: {},
+          },
+        });
+      });
+  });
+});
