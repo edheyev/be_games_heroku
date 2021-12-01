@@ -169,7 +169,7 @@ describe("GET /api/reviews", () => {
         });
       });
   });
-  it.only("status 200: accepts category query which filters based on category", () => {
+  it("status 200: accepts category query which filters based on category", () => {
     return request(app)
       .get("/api/reviews?sort_by=votes&order=DESC&category=dexterity")
       .expect(200)
@@ -212,17 +212,73 @@ describe("GET /api/reviews", () => {
       });
   });
   //cat with no reviews associated
-  it.only("status 400: category has no reviews", () => {
+  it("status 400: category has no reviews", () => {
     return request(app)
       .get("/api/reviews?category=children%27s+games")
-      .expect(400)
+      .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("category has no reviews");
+        expect(body.msg).toBe("No reviews Found");
       });
   });
 });
 
-// GET /api/reviews/:review_id/comments
-// POST /api/reviews/:review_id/comments
+describe("GET /api/reviews/:review_id/comments", () => {
+  it("status 200: respons with array of comments for the given review_id", () => {
+    return request(app)
+      .get("/api/reviews/2/comments")
+      .expect(200)
+      .then(({ body }) => {
+        expect(Array.isArray(body.comments)).toBe(true);
+        body.comments.forEach((comment) => {
+          expect(comment).toEqual(
+            expect.objectContaining({
+              comment_id: expect.any(Number),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              author: expect.any(String),
+              body: expect.any(String),
+            })
+          );
+        });
+      });
+  });
+  it("should return an empty array if no comments", () => {
+    return request(app)
+      .get("/api/reviews/1/comments")
+      .expect(200)
+      .then(({ body }) => {
+        expect(Array.isArray(body.comments)).toBe(true);
+        expect(body.comments.length).toBe(0);
+      });
+  });
+  it("status 404: if review does not exist", () => {
+    return request(app)
+      .get("/api/reviews/9999/comments")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("No reviews Found");
+      });
+  });
+});
+
+describe("POST /api/reviews/:review_id/comments", () => {
+  it("status 204: accepts comment response and returns the posted comment", () => {
+    return request(app)
+      .post("/api/reviews/1/comments")
+      .send({ username: "EdComment", body: "Ooooh its reeet gut" })
+      .expect(201)
+      .then((response) => {
+        expect(response.body.comment).toEqual(
+          expect.objectContaining({
+            comment_id: expect.any(Number),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            author: expect.any(String),
+            body: expect.any(String),
+          })
+        );
+      });
+  });
+});
 // DELETE /api/comments/:comment_id
 // GET /api

@@ -3,7 +3,9 @@ const {
   checkIfReviewExists,
   updateReviewVotesById,
   selectReviews,
-  checkReviewsExist,
+  checkReviewCategoryExists,
+  selectReviewCommentsById,
+  checkReviewExists,
 } = require("../models/review.model.js");
 const { checkValidBody, removeApostrophe } = require("../utils/utils");
 
@@ -32,11 +34,24 @@ exports.getReviews = (req, res, next) => {
   const { sort_by, order, category } = req.query;
   Promise.all([
     selectReviews(sort_by, order, category),
-    checkReviewsExist(category),
+    checkReviewCategoryExists(category),
   ])
     .then(([reviews]) => {
-      console.log({ reviews });
       res.status(200).send({ reviews: reviews });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.getReviewCommentsById = (req, res, next) => {
+  const { review_id } = req.params;
+  Promise.all([
+    selectReviewCommentsById(review_id),
+    checkReviewExists(review_id),
+  ])
+    .then(([reviewComments]) => {
+      res.status(200).send({ comments: reviewComments });
     })
     .catch(next);
 };

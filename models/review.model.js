@@ -1,4 +1,5 @@
 const db = require("../db/connection");
+const { removeApostrophe } = require("../utils/utils");
 
 exports.selectReviewById = (review_id) => {
   return db
@@ -14,7 +15,7 @@ exports.selectReviewById = (review_id) => {
       return rows;
     })
     .catch((err) => {
-      //console.log(err);
+      // console.log(err);
     });
 };
 
@@ -62,7 +63,7 @@ exports.selectReviews = (
   let catQuery;
   category === ""
     ? (catQuery = "")
-    : (catQuery = `WHERE category = '${category}'`);
+    : (catQuery = `WHERE category = '${removeApostrophe(category)}'`);
 
   if (
     ![
@@ -116,15 +117,12 @@ exports.selectReviews = (
     });
 };
 
-exports.checkReviewsExist = (category = "") => {
-  let tCat;
-  if (category.includes("'")) {
-    tCat = removeApostrophe(category);
-  } else {
-    tCat = category;
-  }
+exports.checkReviewCategoryExists = (category = "") => {
   let catQuery;
-  category === "" ? (catQuery = "") : (catQuery = `WHERE category = '${tCat}'`);
+  category === ""
+    ? (catQuery = "")
+    : (catQuery = `WHERE category = '${removeApostrophe(category)}'`);
+
   if (
     ![
       "",
@@ -136,15 +134,43 @@ exports.checkReviewsExist = (category = "") => {
   ) {
     return Promise.reject({ status: 400, msg: "INVALID category QUERY" });
   }
-  // console.log(catQuery);
 
-  return db.query(`SELECT * FROM reviews ${catQuery}`).then((result) => {
-    const { rows } = result;
-    // console.log(result);
-    if (rows.length === 0) {
-      return Promise.reject({ status: 404, msg: "category has no reviews" });
-    } else {
-      return Promise.resolve();
-    }
-  });
+  return db
+    .query(`SELECT * FROM reviews ${catQuery}`)
+    .then((result) => {
+      const { rows } = result;
+      // console.log(rows);
+      if (rows.length === 0) {
+        return Promise.reject({ status: 404, msg: "No reviews Found" });
+      } else {
+        return Promise.resolve();
+      }
+    })
+    .catch((err) => {
+      return Promise.reject({ status: 404, msg: "No reviews Found" });
+    });
+};
+
+exports.selectReviewCommentsById = (review_id) => {
+  return db
+    .query(
+      `SELECT comment_id, votes, 
+  created_at, author, body
+  FROM comments WHERE review_id = $1`,
+      [review_id]
+    )
+    .then(({ rows }) => {
+      return rows;
+    })
+    .catch((err) => {});
+};
+
+exports.checkReviewExists = (review_id) => {
+  return db
+    .query(`SELECT * FROM reviews WHERE review_id = $1`, [review_id])
+    .then(({ rows }) => {
+      if (rows.length === 0) {
+        return Promise.reject({ status: 404, msg: "No reviews Found" });
+      }
+    });
 };
