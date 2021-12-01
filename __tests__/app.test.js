@@ -54,7 +54,7 @@ describe("GET /api/reviews/:review_id", () => {
       .get("/api/reviews/999999")
       .expect(404)
       .then((response) => {
-        expect(response.body.msg).toEqual("review id not found");
+        expect(response.body.msg).toEqual("Review id not found");
       });
   });
   //404 not found for incorrect game id
@@ -97,7 +97,7 @@ describe("PATCH /api/reviews/:review_id", () => {
       .send({})
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("bad patch request- keys dont match");
+        expect(body.msg).toBe("Bad request- keys dont match");
       });
   });
   //invalid inc_votes
@@ -107,7 +107,7 @@ describe("PATCH /api/reviews/:review_id", () => {
       .send({ inc_votes: "cats" })
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("bad patch request- values are wrong type");
+        expect(body.msg).toBe("Bad request- values are wrong type");
       });
   });
   //extra properties on request body
@@ -117,7 +117,7 @@ describe("PATCH /api/reviews/:review_id", () => {
       .send({})
       .expect(404)
       .then(({ body }) => {
-        expect(body.msg).toBe("bad patch request- keys dont match");
+        expect(body.msg).toBe("Bad request- keys dont match");
       });
   });
 });
@@ -203,7 +203,7 @@ describe("GET /api/reviews", () => {
       });
   });
   //bad cat
-  it("status 400: category", () => {
+  it("status 400: category does not exist", () => {
     return request(app)
       .get("/api/reviews?category=paper")
       .expect(400)
@@ -262,10 +262,10 @@ describe("GET /api/reviews/:review_id/comments", () => {
 });
 
 describe("POST /api/reviews/:review_id/comments", () => {
-  it("status 204: accepts comment response and returns the posted comment", () => {
+  it("status 201: accepts comment response and returns the posted comment", () => {
     return request(app)
       .post("/api/reviews/1/comments")
-      .send({ username: "EdComment", body: "Ooooh its reeet gut" })
+      .send({ username: "mallionaire", body: "Ooooh its reeet gut" })
       .expect(201)
       .then((response) => {
         expect(response.body.comment).toEqual(
@@ -277,6 +277,33 @@ describe("POST /api/reviews/:review_id/comments", () => {
             body: expect.any(String),
           })
         );
+      });
+  });
+  it("status 404 user does not exist", () => {
+    return request(app)
+      .post("/api/reviews/1/comments")
+      .send({ username: "EdAccount", body: "Ooooh its reeet gut" })
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toEqual("Search parameter does not exist");
+      });
+  });
+  it("status 404 incorrect keys in req body", () => {
+    return request(app)
+      .post("/api/reviews/1/comments")
+      .send({ username: "EdAccount", body: "Ooooh its reeet gut", sand: "red" })
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toEqual("Bad request- keys dont match");
+      });
+  });
+  it("status 404 empty req body", () => {
+    return request(app)
+      .post("/api/reviews/1/comments")
+      .send({})
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toEqual("Bad request- keys dont match");
       });
   });
 });

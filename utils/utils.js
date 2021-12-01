@@ -5,7 +5,7 @@ exports.checkValidBody = (check, example) => {
     if (JSON.stringify(cKeys) !== JSON.stringify(eKeys)) {
       const errorObj = {
         status: 404,
-        msg: "bad patch request- keys dont match",
+        msg: "Bad request- keys dont match",
       };
       reject(errorObj);
     } else {
@@ -14,7 +14,7 @@ exports.checkValidBody = (check, example) => {
         if (typeof value !== typeof example[key]) {
           const errorObj = {
             status: 404,
-            msg: "bad patch request- values are wrong type",
+            msg: "Bad request- values are wrong type",
           };
           reject(errorObj);
         }

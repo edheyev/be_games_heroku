@@ -6,6 +6,7 @@ const {
   checkReviewCategoryExists,
   selectReviewCommentsById,
   checkReviewExists,
+  insertCommentOnReview,
 } = require("../models/review.model.js");
 const { checkValidBody, removeApostrophe } = require("../utils/utils");
 
@@ -54,4 +55,20 @@ exports.getReviewCommentsById = (req, res, next) => {
       res.status(200).send({ comments: reviewComments });
     })
     .catch(next);
+};
+
+exports.postCommentOnReview = (req, res, next) => {
+  const { review_id } = req.params;
+  const comment = req.body;
+
+  Promise.all([
+    insertCommentOnReview(review_id, comment),
+    checkValidBody(comment, { username: "example", body: "example" }),
+  ])
+    .then(([comment]) => {
+      res.status(201).send({ comment: comment });
+    })
+    .catch((err) => {
+      next(err);
+    });
 };
