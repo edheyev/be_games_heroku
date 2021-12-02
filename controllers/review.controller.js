@@ -5,7 +5,7 @@ const {
   selectReviews,
   checkReviewCategoryExists,
 } = require("../models/review.model.js");
-const { checkValidBody, removeApostrophe } = require("../utils/utils");
+const { checkValidBody } = require("../utils/utils");
 
 exports.getReviewById = (req, res, next) => {
   const { review_id } = req.params;
@@ -37,7 +37,5 @@ exports.getReviews = (req, res, next) => {
     .then(([reviews]) => {
       res.status(200).send({ reviews: reviews });
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch(next);
 };

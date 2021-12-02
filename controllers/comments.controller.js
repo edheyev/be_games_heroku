@@ -4,6 +4,7 @@ const {
   insertCommentOnReview,
   removeCommentById,
   checkCommentExists,
+  updateCommentVotes,
 } = require("../models/comments.model");
 
 const { checkValidBody } = require("../utils/utils");
@@ -44,6 +45,21 @@ exports.deleteCommentById = (req, res, next) => {
     })
     .then(() => {
       res.status(204).send();
+    })
+    .catch(next);
+};
+
+exports.patchCommentVotes = (req, res, next) => {
+  const { comment_id } = req.params;
+  const { inc_votes } = req.body;
+
+  Promise.all([
+    updateCommentVotes(comment_id, inc_votes),
+    checkCommentExists(comment_id),
+  ])
+    .then(([comment]) => {
+      console.log({ comment: comment });
+      res.status(200).send({ comment: comment });
     })
     .catch(next);
 };

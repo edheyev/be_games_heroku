@@ -44,3 +44,24 @@ exports.checkCommentExists = (comment_id) => {
       return Promise.resolve;
     });
 };
+
+exports.updateCommentVotes = (comment_id, inc_votes) => {
+  return db
+    .query("SELECT votes FROM comments WHERE comment_id = $1", [comment_id])
+    .then(({ rows }) => {
+      return rows[0].votes;
+    })
+    .then((votes) => {
+      return db
+        .query(
+          `UPDATE comments
+      SET votes = $2
+      WHERE comment_id = $1
+      RETURNING *`,
+          [comment_id, (votes += inc_votes)]
+        )
+        .then(({ rows }) => {
+          return rows[0];
+        });
+    });
+};

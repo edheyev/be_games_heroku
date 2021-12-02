@@ -448,6 +448,41 @@ describe("GET api/users", () => {
         });
       });
   });
+  //
 });
-//get api/users/:username
-//PATCH /api/comments/:comment_id
+describe("GET api/users/:username", () => {
+  it("status 200 returns user object by id with username avatar_url and name", () => {
+    return request(app)
+      .get("/api/users/philippaclaire9")
+      .expect(200)
+      .then(({ body }) => {
+        expect.objectContaining({
+          username: expect.any(String),
+          name: expect.any(String),
+          avatar_url: expect.any(String),
+        });
+      });
+  });
+  //user doesnt exist
+  it("status 404 user does not exist", () => {
+    return request(app)
+      .get("/api/users/notRealUser")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("User Not Found");
+      });
+  });
+});
+describe("PATCH /api/comments/:comment_id", () => {
+  it("status 204  accepts vode object returns with the updated comemnt", () => {
+    return request(app)
+      .patch("/api/comments/1")
+      .send({ inc_votes: 10 })
+      .expect(200)
+      .then(({ body }) => {
+        console.log(body);
+        expect(body.comment.votes).toBe(26);
+      });
+    ``;
+  });
+});

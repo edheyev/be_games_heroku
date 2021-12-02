@@ -86,5 +86,10 @@
     "description": "delete comment via comment id",
     "queries": [],
     "exampleResponse": {}
+  },
+  "GET api/users": {
+    "description": "returns all users",
+    "queries": [],
+    "exampleResponse": {}
   }
 }
