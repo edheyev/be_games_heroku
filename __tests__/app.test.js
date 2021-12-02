@@ -609,3 +609,36 @@ describe("PATCH /api/comments/:comment_id", () => {
     ``;
   });
 });
+
+describe.only("POST /api/reviews", () => {
+  it("status 200 post new review and respond with newly added review", () => {
+    return request(app)
+      .post("/api/reviews")
+      .send({
+        owner: "mallionaire",
+        title: "8Dchess",
+        review_body: "it's just chess... in the 8th dimension",
+        designer: "S. Hawking",
+        category: "dexterity",
+      })
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.review).toEqual(
+          expect.objectContaining({
+            owner: "mallionaire",
+            title: "8Dchess",
+            review_body: "it's just chess... in the 8th dimension",
+            designer: "S. Hawking",
+            category: "dexterity",
+            review_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            // comment_count: expect.any(Number),
+          })
+        );
+      });
+  });
+});
+
+// POST / api / categories;
+// DELETE /api/reviews/:review_id

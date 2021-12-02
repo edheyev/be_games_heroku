@@ -127,7 +127,7 @@ exports.selectReviews = (
         )
         .then(({ rows }) => {
           rows.totalCount = totalCount;
-          console.log(rows);
+
           return rows;
         });
     });
@@ -169,4 +169,35 @@ exports.checkReviewExists = (review_id) => {
         return Promise.reject({ status: 404, msg: "No reviews Found" });
       }
     });
+};
+
+exports.insertNewReview = (review_data) => {
+  const { owner, title, review_body, designer, category } = review_data;
+  return (
+    db
+      .query(
+        `INSERT into reviews (owner, title, review_body, designer, category)
+    VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+        [owner, title, review_body, designer, category]
+      )
+      // .then(({ rows }) => {
+      //   console.log(rows[0].review_id);
+      //   return db
+      //     .query(
+      //       `SELECT reviews.owner, reviews.title,
+      //     reviews.review_id, reviews.category,
+      //     reviews.designer, reviews.created_at,
+      //     reviews.votes,
+      //     COUNT(comments.review_id) as comment_count
+      //     FROM comments
+      //     RIGHT JOIN reviews ON reviews.review_id=comments.review_id
+      //     WHERE comments.review_id = ${rows[0].review_id}
+      //     GROUP BY reviews.review_id`
+      //     )
+      .then(({ rows }) => {
+        console.log(rows);
+        return rows[0];
+      })
+  );
+  // });
 };

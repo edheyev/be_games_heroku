@@ -53,9 +53,6 @@ exports.deleteCommentById = (req, res, next) => {
 exports.patchCommentVotes = (req, res, next) => {
   const { comment_id } = req.params;
   const inc_votes = req.body;
-
-  console.log(inc_votes);
-
   Promise.all([
     checkCommentExists(comment_id),
     checkValidBody(inc_votes, { inc_votes: 1 }),

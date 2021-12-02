@@ -1,9 +1,11 @@
+const { insertCommentOnReview } = require("../models/comments.model.js");
 const {
   selectReviewById,
   checkIfReviewExists,
   updateReviewVotesById,
   selectReviews,
   checkReviewCategoryExists,
+  insertNewReview,
 } = require("../models/review.model.js");
 const { checkValidBody } = require("../utils/utils");
 
@@ -40,4 +42,21 @@ exports.getReviews = (req, res, next) => {
         .send({ reviews: reviews, totalCount: reviews.totalCount });
     })
     .catch(next);
+};
+
+exports.postReview = (req, res, next) => {
+  const reviewData = req.body;
+  const exampleRev = {
+    owner: "",
+    title: "",
+    review_body: "",
+    designer: "",
+    category: "",
+  };
+  checkValidBody(reviewData, exampleRev).then(() => {
+    insertNewReview(reviewData).then((review) => {
+      res.status(200).send({ review: review });
+    });
+  });
+  // .catch(err);
 };
