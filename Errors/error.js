@@ -10,6 +10,8 @@ exports.handleSqlErrors = (err, req, res, next) => {
     res.status(404).send({ msg: "Invalid Request" });
   } else if (err.code === "23503") {
     res.status(404).send({ msg: "Search parameter does not exist" });
+  } else if (err.code === "42703") {
+    res.status(404).send({ msg: "Bad query" });
   } else {
     next(err);
   }

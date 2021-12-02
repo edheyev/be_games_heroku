@@ -11,8 +11,9 @@ const { checkValidBody } = require("../utils/utils");
 
 exports.getReviewCommentsById = (req, res, next) => {
   const { review_id } = req.params;
+  const { limit, p } = req.query;
   Promise.all([
-    selectReviewCommentsById(review_id),
+    selectReviewCommentsById(review_id, limit, p),
     checkReviewExists(review_id),
   ])
     .then(([reviewComments]) => {
@@ -64,8 +65,5 @@ exports.patchCommentVotes = (req, res, next) => {
         res.status(200).send({ comment: comment });
       });
     })
-    .catch((err) => {
-      console.log(err);
-      next(err);
-    });
+    .catch(next);
 };

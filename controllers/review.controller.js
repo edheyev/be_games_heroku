@@ -29,13 +29,15 @@ exports.patchReviewVotesById = (req, res, next) => {
 };
 
 exports.getReviews = (req, res, next) => {
-  const { sort_by, order, category } = req.query;
+  const { sort_by, order, category, limit, p } = req.query;
   Promise.all([
-    selectReviews(sort_by, order, category),
+    selectReviews(sort_by, order, category, limit, p),
     checkReviewCategoryExists(category),
   ])
     .then(([reviews]) => {
-      res.status(200).send({ reviews: reviews });
+      res
+        .status(200)
+        .send({ reviews: reviews, totalCount: reviews.totalCount });
     })
     .catch(next);
 };

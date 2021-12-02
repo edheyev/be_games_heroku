@@ -52,8 +52,12 @@ exports.updateReviewVotesById = (review_id, voteInc) => {
 exports.selectReviews = (
   sort_by = "created_at",
   order = "ASC",
-  category = ""
+  category = "",
+  limit = 10,
+  p = 1
 ) => {
+  let page;
+  let totalCount;
   let catQuery;
   category === ""
     ? (catQuery = "")
@@ -90,21 +94,42 @@ exports.selectReviews = (
     return Promise.reject({ status: 400, msg: "INVALID category QUERY" });
   }
 
+  if (!typeof limit === "number" || !typeof p === "number") {
+    return Promise.reject({ status: 400, msg: "INVALID limit/page QUERY" });
+  } else {
+    page = limit * (p - 1);
+  }
+
   return db
     .query(
-      `SELECT reviews.owner, reviews.title, 
-      reviews.review_id, reviews.category, 
-      reviews.review_img_url, reviews.created_at,
-      reviews.votes, 
-      COUNT(comments.review_id) as comment_count 
-      FROM comments 
-      RIGHT JOIN reviews ON reviews.review_id=comments.review_id 
-      ${catQuery}    
-      GROUP BY reviews.review_id
-      ORDER BY ${sort_by} ${order};`
+      `SELECT * FROM reviews
+   ${catQuery}`
     )
     .then(({ rows }) => {
-      return rows;
+      if (page > rows.length) {
+        return Promise.reject({ status: 404, msg: "page not found" });
+      }
+      totalCount = rows.length;
+      return db
+        .query(
+          `SELECT reviews.owner, reviews.title, 
+        reviews.review_id, reviews.category, 
+        reviews.review_img_url, reviews.created_at,
+        reviews.votes, 
+        COUNT(comments.review_id) as comment_count 
+        FROM comments 
+        RIGHT JOIN reviews ON reviews.review_id=comments.review_id 
+        ${catQuery}    
+        GROUP BY reviews.review_id
+        ORDER BY ${sort_by} ${order}
+        LIMIT ${limit}
+        OFFSET ${page};`
+        )
+        .then(({ rows }) => {
+          rows.totalCount = totalCount;
+          console.log(rows);
+          return rows;
+        });
     });
 };
 

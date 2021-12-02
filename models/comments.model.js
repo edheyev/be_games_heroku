@@ -5,7 +5,7 @@ exports.insertCommentOnReview = (review_id, comment) => {
   return db
     .query(
       `INSERT INTO comments (body, author, review_id) 
-  VALUES ($1, $2, $3) RETURNING *`,
+   VALUES ($1, $2, $3) RETURNING *`,
       [body, username, review_id]
     )
     .then(({ rows }) => {
@@ -13,16 +13,33 @@ exports.insertCommentOnReview = (review_id, comment) => {
     });
 };
 
-exports.selectReviewCommentsById = (review_id) => {
+exports.selectReviewCommentsById = (review_id, limit = 10, p = 1) => {
+  let totalCount, page;
+  if (!typeof limit === "number" || !typeof p === "number") {
+    return Promise.reject({ status: 400, msg: "INVALID limit/page QUERY" });
+  } else {
+    page = limit * (p - 1);
+  }
+
   return db
-    .query(
-      `SELECT comment_id, votes, 
-  created_at, author, body
-  FROM comments WHERE review_id = $1`,
-      [review_id]
-    )
+    .query(`SELECT * FROM comments WHERE review_id = $1`, [review_id])
     .then(({ rows }) => {
-      return rows;
+      if (page > rows.length) {
+        return Promise.reject({ status: 404, msg: "page not found" });
+      }
+      totalCount = rows.length;
+      return db
+        .query(
+          `SELECT comment_id, votes, 
+        created_at, author, body
+        FROM comments WHERE review_id = $1
+        LIMIT ${limit}
+        OFFSET ${page};`,
+          [review_id]
+        )
+        .then(({ rows }) => {
+          return rows;
+        });
     });
 };
 

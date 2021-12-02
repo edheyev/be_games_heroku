@@ -219,6 +219,47 @@ describe("GET /api/reviews", () => {
         expect(body.msg).toBe("No reviews Found");
       });
   });
+  it("status 200: responses paginated, default length 10", () => {
+    return request(app)
+      .get("/api/reviews")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.reviews.length).toBe(10);
+      });
+  });
+  it("status 200: responses paginated, changed with query of limit", () => {
+    return request(app)
+      .get("/api/reviews?limit=5")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.reviews.length).toBe(5);
+      });
+  });
+  it("status 200: responses paginated, changed with query of p : page", () => {
+    return request(app)
+      .get("/api/reviews?p=2")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.reviews.length).toBe(3);
+      });
+  });
+  //page empty
+  it("status 404 page not found", () => {
+    return request(app)
+      .get("/api/reviews?p=5")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("page not found");
+      });
+  });
+  it("status 200: responses have total count property showing total number of reviews", () => {
+    return request(app)
+      .get("/api/reviews")
+      .expect(200)
+      .then(({ body }) => {
+        expect(body.totalCount).toBe(13);
+      });
+  });
 });
 
 describe("GET /api/reviews/:review_id/comments", () => {
@@ -256,6 +297,49 @@ describe("GET /api/reviews/:review_id/comments", () => {
       .expect(404)
       .then(({ body }) => {
         expect(body.msg).toBe("No reviews Found");
+      });
+  });
+  it("status 200: responses paginated default to 10", () => {
+    return request(app)
+      .get("/api/reviews/2/comments")
+      .expect(200)
+      .then(({ body }) => {
+        expect(Array.isArray(body.comments)).toBe(true);
+        expect(body.comments.length).toBe(3);
+      });
+  });
+  it("status 200: responses paginated limit by limit", () => {
+    return request(app)
+      .get("/api/reviews/2/comments?limit=1")
+      .expect(200)
+      .then(({ body }) => {
+        expect(Array.isArray(body.comments)).toBe(true);
+        expect(body.comments.length).toBe(1);
+      });
+  });
+  it("status 200: responses paginated limit by page", () => {
+    return request(app)
+      .get("/api/reviews/2/comments?p=1")
+      .expect(200)
+      .then(({ body }) => {
+        expect(Array.isArray(body.comments)).toBe(true);
+        expect(body.comments.length).toBe(3);
+      });
+  });
+  it("status 4040: responses paginated do not return empty page", () => {
+    return request(app)
+      .get("/api/reviews/2/comments?p=2")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("page not found");
+      });
+  });
+  it("status 404 page query not number", () => {
+    return request(app)
+      .get("/api/reviews/2/comments?limit=dog")
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad query");
       });
   });
 });
