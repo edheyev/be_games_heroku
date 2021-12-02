@@ -13,9 +13,6 @@ exports.selectReviewById = (review_id) => {
     )
     .then(({ rows }) => {
       return rows;
-    })
-    .catch((err) => {
-      // console.log(err);
     });
 };
 
@@ -49,9 +46,6 @@ exports.updateReviewVotesById = (review_id, voteInc) => {
         .then(({ rows }) => {
           return rows[0];
         });
-    })
-    .catch((err) => {
-      // console.log(err);
     });
 };
 
@@ -111,9 +105,6 @@ exports.selectReviews = (
     )
     .then(({ rows }) => {
       return rows;
-    })
-    .catch((err) => {
-      console.log(err);
     });
 };
 
@@ -135,20 +126,14 @@ exports.checkReviewCategoryExists = (category = "") => {
     return Promise.reject({ status: 400, msg: "INVALID category QUERY" });
   }
 
-  return db
-    .query(`SELECT * FROM reviews ${catQuery}`)
-    .then((result) => {
-      const { rows } = result;
-      // console.log(rows);
-      if (rows.length === 0) {
-        return Promise.reject({ status: 404, msg: "No reviews Found" });
-      } else {
-        return Promise.resolve();
-      }
-    })
-    .catch((err) => {
+  return db.query(`SELECT * FROM reviews ${catQuery}`).then((result) => {
+    const { rows } = result;
+    if (rows.length === 0) {
       return Promise.reject({ status: 404, msg: "No reviews Found" });
-    });
+    } else {
+      return Promise.resolve();
+    }
+  });
 };
 
 exports.checkReviewExists = (review_id) => {
