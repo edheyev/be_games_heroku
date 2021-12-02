@@ -128,7 +128,6 @@ describe("GET /api/reviews", () => {
       .get("/api/reviews")
       .expect(200)
       .then(({ body }) => {
-        // console.log(body.reviews);
         expect(body.reviews.length > 0).toBe(true);
         expect(body.reviews).toBeSortedBy("created_at");
         body.reviews.forEach((review) => {
@@ -440,9 +439,13 @@ describe("GET api/users", () => {
       .then(({ body }) => {
         expect(Array.isArray(body.users)).toBe(true);
         expect(body.users.length > 0).toBe(true);
-        // body.users.forEach(user =>{
-        //   exp
-        // })
+        body.users.forEach((user) => {
+          expect(user).toEqual(
+            expect.objectContaining({
+              username: expect.any(String),
+            })
+          );
+        });
       });
   });
 });
