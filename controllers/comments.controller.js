@@ -51,15 +51,21 @@ exports.deleteCommentById = (req, res, next) => {
 
 exports.patchCommentVotes = (req, res, next) => {
   const { comment_id } = req.params;
-  const { inc_votes } = req.body;
+  const inc_votes = req.body;
+
+  console.log(inc_votes);
 
   Promise.all([
-    updateCommentVotes(comment_id, inc_votes),
     checkCommentExists(comment_id),
+    checkValidBody(inc_votes, { inc_votes: 1 }),
   ])
-    .then(([comment]) => {
-      console.log({ comment: comment });
-      res.status(200).send({ comment: comment });
+    .then(() => {
+      updateCommentVotes(comment_id, inc_votes).then((comment) => {
+        res.status(200).send({ comment: comment });
+      });
     })
-    .catch(next);
+    .catch((err) => {
+      console.log(err);
+      next(err);
+    });
 };

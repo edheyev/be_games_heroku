@@ -480,8 +480,47 @@ describe("PATCH /api/comments/:comment_id", () => {
       .send({ inc_votes: 10 })
       .expect(200)
       .then(({ body }) => {
-        console.log(body);
         expect(body.comment.votes).toBe(26);
+      });
+    ``;
+  });
+  it("status 400  bad comment id", () => {
+    return request(app)
+      .patch("/api/comments/99999")
+      .send({ inc_votes: 10 })
+      .expect(400)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Comment does not exist");
+      });
+    ``;
+  });
+  it("status 404  inc_votes NaN", () => {
+    return request(app)
+      .patch("/api/comments/1")
+      .send({ inc_votes: "dogs" })
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request- values are wrong type");
+      });
+    ``;
+  });
+  it("status 404 patch body empty", () => {
+    return request(app)
+      .patch("/api/comments/1")
+      .send({})
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request- keys dont match");
+      });
+    ``;
+  });
+  it("status 404 patch body has extra values", () => {
+    return request(app)
+      .patch("/api/comments/1")
+      .send({ inc_votes: 10, something: "else" })
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe("Bad request- keys dont match");
       });
     ``;
   });

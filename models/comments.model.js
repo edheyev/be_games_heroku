@@ -45,7 +45,8 @@ exports.checkCommentExists = (comment_id) => {
     });
 };
 
-exports.updateCommentVotes = (comment_id, inc_votes) => {
+exports.updateCommentVotes = (comment_id, votes) => {
+  const { inc_votes } = votes;
   return db
     .query("SELECT votes FROM comments WHERE comment_id = $1", [comment_id])
     .then(({ rows }) => {
