@@ -195,9 +195,18 @@ exports.insertNewReview = (review_data) => {
       //     GROUP BY reviews.review_id`
       //     )
       .then(({ rows }) => {
-        console.log(rows);
         return rows[0];
       })
   );
   // });
+};
+
+exports.removeReviewById = (review_id) => {
+  return db
+    .query(`DELETE FROM reviews WHERE review_id = $1`, [review_id])
+    .then(() => {
+      console.log("hellow");
+
+      return Promise.resolve;
+    });
 };

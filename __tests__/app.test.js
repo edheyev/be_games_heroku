@@ -610,7 +610,7 @@ describe("PATCH /api/comments/:comment_id", () => {
   });
 });
 
-describe.only("POST /api/reviews", () => {
+describe("POST /api/reviews", () => {
   it("status 200 post new review and respond with newly added review", () => {
     return request(app)
       .post("/api/reviews")
@@ -640,5 +640,54 @@ describe.only("POST /api/reviews", () => {
   });
 });
 
-// POST / api / categories;
-// DELETE /api/reviews/:review_id
+describe("POST /api/categories", () => {
+  it("status 200 post new review and respond with newly added review", () => {
+    return request(app)
+      .post("/api/categories")
+      .send({
+        slug: "dangerous",
+        description: "bear baiting",
+      })
+      .expect(200)
+      .then(({ body }) => {
+        console.log(body);
+        expect(body.category).toEqual(
+          expect.objectContaining({
+            slug: "dangerous",
+            description: "bear baiting",
+          })
+        );
+      });
+  });
+  it("status 404 invalid body", () => {
+    return request(app)
+      .post("/api/categories")
+      .send({
+        snail: "dangerous",
+        description: "bear baiting",
+      })
+      .expect(404)
+      .then(({ body }) => {
+        console.log(body);
+        expect(body.msg).toEqual("Bad request- keys dont match");
+      });
+  });
+});
+describe.only("DELETE /api/reviews/:review_id", () => {
+  it("204 deletion complete return nothing", () => {
+    return request(app)
+      .delete("/api/reviews/1")
+      .expect(204)
+      .then((response) => {
+        expect(response.body).toEqual({});
+      });
+  });
+  it("status 400 comment doesnt exist", () => {
+    return request(app)
+      .delete("/api/reviews/9999999")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toEqual("No reviews Found");
+      });
+  });
+});

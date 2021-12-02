@@ -6,6 +6,8 @@ const {
   selectReviews,
   checkReviewCategoryExists,
   insertNewReview,
+  removeReviewById,
+  checkReviewExists,
 } = require("../models/review.model.js");
 const { checkValidBody } = require("../utils/utils");
 
@@ -53,10 +55,24 @@ exports.postReview = (req, res, next) => {
     designer: "",
     category: "",
   };
-  checkValidBody(reviewData, exampleRev).then(() => {
-    insertNewReview(reviewData).then((review) => {
-      res.status(200).send({ review: review });
-    });
-  });
-  // .catch(err);
+  checkValidBody(reviewData, exampleRev)
+    .then(() => {
+      insertNewReview(reviewData).then((review) => {
+        res.status(200).send({ review: review });
+      });
+    })
+    .catch(next);
+};
+
+exports.deleteReviewById = (req, res, next) => {
+  const { review_id } = req.params;
+
+  checkReviewExists(review_id)
+    .then(() => {
+      removeReviewById(review_id);
+    })
+    .then(() => {
+      res.status(204).send({});
+    })
+    .catch(next);
 };
