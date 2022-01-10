@@ -1,3 +1,4 @@
+const { getCats } = require("../controllers/cats.controller");
 const db = require("../db/connection");
 const { removeApostrophe } = require("../utils/utils");
 const { selectCats } = require("./cats.model");
@@ -83,18 +84,6 @@ exports.selectReviews = (
     return Promise.reject({ status: 400, msg: "INVALID order QUERY" });
   }
 
-  // if (
-  //   ![
-  //     "",
-  //     "children's-games",
-  //     "euro-game",
-  //     "dexterity",
-  //     "social-deduction",
-  //   ].includes(category)
-  // ) {
-  //   return Promise.reject({ status: 400, msg: "INVALID category QUERY" });
-  // }
-
   if (!typeof limit === "number" || !typeof p === "number") {
     return Promise.reject({ status: 400, msg: "INVALID limit/page QUERY" });
   } else {
@@ -140,25 +129,22 @@ exports.checkReviewCategoryExists = (category = "") => {
     ? (catQuery = "")
     : (catQuery = `WHERE category = '${removeApostrophe(category)}'`);
 
-  if (
-    ![
-      "",
-      "children's games",
-      "euro game",
-      "dexterity",
-      "social deduction",
-    ].includes(category)
-  ) {
-    return Promise.reject({ status: 400, msg: "INVALID category QUERY" });
-  }
-
-  return db.query(`SELECT * FROM reviews ${catQuery}`).then((result) => {
-    const { rows } = result;
-    if (rows.length === 0) {
-      return Promise.reject({ status: 404, msg: "No reviews Found" });
-    } else {
-      return Promise.resolve();
+  selectCats().then((cats) => {
+    const catAr = cats.map((cat) => {
+      return cat.slug;
+    });
+    if (!catAr.includes(category)) {
+      return Promise.reject({ status: 400, msg: "INVALID category QUERYyyy" });
     }
+
+    return db.query(`SELECT * FROM reviews ${catQuery}`).then((result) => {
+      const { rows } = result;
+      if (rows.length === 0) {
+        return Promise.reject({ status: 404, msg: "No reviews Found" });
+      } else {
+        return Promise.resolve();
+      }
+    });
   });
 };
 
