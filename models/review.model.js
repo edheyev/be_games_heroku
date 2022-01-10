@@ -85,10 +85,10 @@ exports.selectReviews = (
   if (
     ![
       "",
-      "children's games",
-      "euro game",
+      "children's-games",
+      "euro-game",
       "dexterity",
-      "social deduction",
+      "social-deduction",
     ].includes(category)
   ) {
     return Promise.reject({ status: 400, msg: "INVALID category QUERY" });
