@@ -7,7 +7,7 @@ const request = require("supertest");
 beforeEach(() => seed(testData));
 afterAll(() => db.end());
 
-describe("GET /api/categories", () => {
+describe.only("GET /api/categories", () => {
   it("status 200: should access cats and return array containing slug and descriptions", () => {
     return request(app)
       .get("/api/categories/")
@@ -15,6 +15,7 @@ describe("GET /api/categories", () => {
       .then((response) => {
         expect(response.body.categories.length > 0);
         response.body.categories.forEach((cat) => {
+          // console.log(cat);
           expect(cat).toEqual(
             expect.objectContaining({
               slug: expect.any(String),
@@ -122,7 +123,7 @@ describe("PATCH /api/reviews/:review_id", () => {
   });
 });
 
-describe("GET /api/reviews", () => {
+describe.only("GET /api/reviews", () => {
   it("status 200: responds with array of review object sorted by date", () => {
     return request(app)
       .get("/api/reviews")
@@ -168,7 +169,22 @@ describe("GET /api/reviews", () => {
         });
       });
   });
-  it("status 200: accepts category query which filters based on category", () => {
+  it.only("status 200: accepts category query which filters based on category", () => {
+    return request(app)
+      .get("/api/reviews?sort_by=votes&order=DESC&category=dexterity")
+      .expect(200)
+      .then(({ body }) => {
+        // console.log(body.reviews);
+        expect(body.reviews.length > 0).toBe(true);
+        expect(body.reviews).toBeSortedBy("votes", {
+          descending: true,
+        });
+        body.reviews.forEach((review) => {
+          expect(review.category).toEqual("dexterity");
+        });
+      });
+  });
+  it.only("status 200: accepts category query which filters based on category", () => {
     return request(app)
       .get("/api/reviews?sort_by=votes&order=DESC&category=dexterity")
       .expect(200)
@@ -673,7 +689,7 @@ describe("POST /api/categories", () => {
       });
   });
 });
-describe.only("DELETE /api/reviews/:review_id", () => {
+describe("DELETE /api/reviews/:review_id", () => {
   it("204 deletion complete return nothing", () => {
     return request(app)
       .delete("/api/reviews/1")
