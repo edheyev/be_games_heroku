@@ -12,7 +12,6 @@ exports.postCat = (req, res, next) => {
   checkValidBody(newCat, { slug: "", description: "" })
     .then(() => {
       insertCats(newCat).then(([category]) => {
-        console.log(category);
         res.status(200).send({ category: category });
       });
     })

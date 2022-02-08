@@ -64,7 +64,7 @@ exports.selectReviews = (
   category === ""
     ? (catQuery = "")
     : (catQuery = `WHERE category = '${removeApostrophe(category)}'`);
-
+  const newCategory = removeApostrophe(category);
   if (
     ![
       "owner",
@@ -90,12 +90,38 @@ exports.selectReviews = (
     page = limit * (p - 1);
   }
 
-  return db
-    .query(
-      `SELECT * FROM reviews
-   ${catQuery}`
-    )
-    .then(({ rows }) => {
+  if (category) {
+    return db
+      .query(`SELECT * FROM reviews WHERE category = $1;`, [newCategory])
+      .then(({ rows }) => {
+        if (page > rows.length) {
+          return Promise.reject({ status: 404, msg: "page not found" });
+        }
+        totalCount = rows.length;
+
+        return db
+          .query(
+            `SELECT reviews.owner, reviews.title, 
+          reviews.review_id, reviews.category, 
+          reviews.review_img_url, reviews.created_at,
+          reviews.votes, 
+          COUNT(comments.review_id) as comment_count 
+          FROM comments 
+          RIGHT JOIN reviews ON reviews.review_id=comments.review_id 
+          WHERE category = $1
+          GROUP BY reviews.review_id
+          ORDER BY ${sort_by} ${order}
+          LIMIT ${limit}
+          OFFSET ${page};`,
+            [newCategory]
+          )
+          .then(({ rows }) => {
+            rows.totalCount = totalCount;
+            return rows;
+          });
+      });
+  } else {
+    return db.query("SELECT * FROM reviews").then(({ rows }) => {
       if (page > rows.length) {
         return Promise.reject({ status: 404, msg: "page not found" });
       }
@@ -103,49 +129,48 @@ exports.selectReviews = (
       return db
         .query(
           `SELECT reviews.owner, reviews.title, 
-        reviews.review_id, reviews.category, 
-        reviews.review_img_url, reviews.created_at,
-        reviews.votes, 
-        COUNT(comments.review_id) as comment_count 
-        FROM comments 
-        RIGHT JOIN reviews ON reviews.review_id=comments.review_id 
-        ${catQuery}    
-        GROUP BY reviews.review_id
-        ORDER BY ${sort_by} ${order}
-        LIMIT ${limit}
-        OFFSET ${page};`
+          reviews.review_id, reviews.category, 
+          reviews.review_img_url, reviews.created_at,
+          reviews.votes, 
+          COUNT(comments.review_id) as comment_count 
+          FROM comments 
+          RIGHT JOIN reviews ON reviews.review_id=comments.review_id   
+          GROUP BY reviews.review_id
+          ORDER BY ${sort_by} ${order}
+          LIMIT ${limit}
+          OFFSET ${page};`
         )
         .then(({ rows }) => {
           rows.totalCount = totalCount;
-
           return rows;
         });
     });
+  }
 };
 
 exports.checkReviewCategoryExists = (category = "") => {
   let catQuery;
-  category === ""
-    ? (catQuery = "")
-    : (catQuery = `WHERE category = '${removeApostrophe(category)}'`);
 
-  selectCats().then((cats) => {
-    const catAr = cats.map((cat) => {
-      return cat.slug;
-    });
-    if (!catAr.includes(category)) {
-      return Promise.reject({ status: 400, msg: "INVALID category QUERYyyy" });
-    }
-
-    return db.query(`SELECT * FROM reviews ${catQuery}`).then((result) => {
-      const { rows } = result;
-      if (rows.length === 0) {
-        return Promise.reject({ status: 404, msg: "No reviews Found" });
-      } else {
-        return Promise.resolve();
+  if (!category) {
+    return Promise.resolve();
+  } else {
+    return selectCats().then((cats) => {
+      const catAr = cats.map((cat) => cat.slug);
+      if (!catAr.includes(category) && category !== "") {
+        return Promise.reject({ status: 400, msg: "INVALID category QUERY" });
       }
+      return db
+        .query(`SELECT * FROM reviews WHERE category = $1`, [category])
+        .then((result) => {
+          const { rows } = result;
+          if (rows.length === 0) {
+            return Promise.reject({ status: 404, msg: "No reviews Found" });
+          } else {
+            return Promise.resolve();
+          }
+        });
     });
-  });
+  }
 };
 
 exports.checkReviewExists = (review_id) => {
@@ -192,8 +217,6 @@ exports.removeReviewById = (review_id) => {
   return db
     .query(`DELETE FROM reviews WHERE review_id = $1`, [review_id])
     .then(() => {
-      console.log("hellow");
-
       return Promise.resolve;
     });
 };
